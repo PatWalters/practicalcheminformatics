@@ -1,0 +1,1 @@
+Sitemap: https://patwalters.github.io/practicalcheminformatics/sitemap.xml
