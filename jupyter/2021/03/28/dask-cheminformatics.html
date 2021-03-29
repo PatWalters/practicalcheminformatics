@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Fast Parallel Cheminformatics Workflows With Dask | fastpages</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Fast Parallel Cheminformatics Workflows With Dask" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Acclerate you workflows with a couple of lines of code." />
+<meta property="og:description" content="Acclerate you workflows with a couple of lines of code." />
+<link rel="canonical" href="https://patwalters.github.io/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html" />
+<meta property="og:url" content="https://patwalters.github.io/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html" />
+<meta property="og:site_name" content="fastpages" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-03-28T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"https://patwalters.github.io/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html","@type":"BlogPosting","headline":"Fast Parallel Cheminformatics Workflows With Dask","dateModified":"2021-03-28T00:00:00-05:00","datePublished":"2021-03-28T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://patwalters.github.io/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html"},"description":"Acclerate you workflows with a couple of lines of code.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/practicalcheminformatics/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://patwalters.github.io/practicalcheminformatics/feed.xml" title="fastpages" /><link rel="shortcut icon" type="image/x-icon" href="/practicalcheminformatics/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/practicalcheminformatics/">fastpages</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/practicalcheminformatics/about/">About Me</a><a class="page-link" href="/practicalcheminformatics/search/">Search</a><a class="page-link" href="/practicalcheminformatics/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Fast Parallel Cheminformatics Workflows With Dask</h1><p class="page-description">Acclerate you workflows with a couple of lines of code.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-03-28T00:00:00-05:00" itemprop="datePublished">
+        Mar 28, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      4 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/practicalcheminformatics/categories/#jupyter">jupyter</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/PatWalters/practicalcheminformatics/tree/master/_notebooks/2021-03-28-dask-cheminformatics.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/practicalcheminformatics/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/PatWalters/practicalcheminformatics/master?filepath=_notebooks%2F2021-03-28-dask-cheminformatics.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/practicalcheminformatics/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/PatWalters/practicalcheminformatics/blob/master/_notebooks/2021-03-28-dask-cheminformatics.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/practicalcheminformatics/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h3"><a href="#Single-Processor-Version">Single Processor Version </a></li>
+<li class="toc-entry toc-h3"><a href="#Parallel-Version">Parallel Version </a></li>
+<li class="toc-entry toc-h3"><a href="#Benchmarking">Benchmarking </a></li>
+<li class="toc-entry toc-h3"><a href="#Acknowledgments">Acknowledgments </a></li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2021-03-28-dask-cheminformatics.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In this post we'll take a look at how we can use <a href="https://dask.org/">Dask</a> to parallelize and speed up Cheminformatics workflows with a couple of lines of code.  As an example we'll write a scritpt to calculate the properties from <a href="https://www.sciencedirect.com/science/article/abs/pii/S0169409X96004231">Lipinski's Rule of 5</a>.  Just for fun, we'll also add in the number of rotatable bonds.  We'll start by implementing a simple serial version, then modify that to run in parallel with Dask.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Single-Processor-Version">
+<a class="anchor" href="#Single-Processor-Version" aria-hidden="true"><span class="octicon octicon-link"></span></a>Single Processor Version<a class="anchor-link" href="#Single-Processor-Version"> </a>
+</h3>
+<p>First we'll import the necessary Python libraries.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+<span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">Descriptors</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>First, let's ensure that that Pandas dataframes are dispalyed with an appropriate number of decimal places.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">float_format</span> <span class="o">=</span> <span class="s2">"</span><span class="si">{:,.2f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next, we'll define a function to calculate the properties</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">calc_r5</span><span class="p">(</span><span class="n">smiles</span><span class="p">):</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span>
+    <span class="n">dummy</span> <span class="o">=</span> <span class="o">-</span><span class="mf">9999.0</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">dummy</span><span class="p">,</span> <span class="n">dummy</span><span class="p">,</span> <span class="n">dummy</span><span class="p">,</span> <span class="n">dummy</span><span class="p">,</span> <span class="n">dummy</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">mol</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">Descriptors</span><span class="o">.</span><span class="n">MolWt</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span><span class="n">Descriptors</span><span class="o">.</span><span class="n">MolLogP</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span><span class="n">Descriptors</span><span class="o">.</span><span class="n">NumHDonors</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span>
+               <span class="n">Descriptors</span><span class="o">.</span><span class="n">NumHAcceptors</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span><span class="n">Descriptors</span><span class="o">.</span><span class="n">NumRotatableBonds</span><span class="p">(</span><span class="n">mol</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">res</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we'll read a SMILES file into a Pandas dataframe</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">infile_name</span> <span class="o">=</span> <span class="s2">"test.smi"</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">infile_name</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s2">" "</span><span class="p">,</span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"SMILES"</span><span class="p">,</span><span class="s2">"Name"</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we can calculate the properties for the SMILES in the dataframe.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">'R5'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">SMILES</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">calc_r5</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we have all of the properties as a list in one column.  This isn't what we want, however, we can use this trick to create new columns from the list.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[[</span><span class="s2">"MW"</span><span class="p">,</span><span class="s2">"LogP"</span><span class="p">,</span><span class="s2">"HBD"</span><span class="p">,</span><span class="s2">"HBA"</span><span class="p">,</span><span class="s2">"Rot"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">R5</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SMILES</th>
+      <th>Name</th>
+      <th>R5</th>
+      <th>MW</th>
+      <th>LogP</th>
+      <th>HBD</th>
+      <th>HBA</th>
+      <th>Rot</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Br.CC(NC(C)(C)C)C(=O)c1cccc(Cl)c1</td>
+      <td>675686</td>
+      <td>[320.658, 3.877200000000003, 1, 2, 3]</td>
+      <td>320.66</td>
+      <td>3.88</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Br.Cc1ccc(Sc2ccccc2N3CCNCC3)c(C)c1</td>
+      <td>1379657</td>
+      <td>[379.3670000000002, 4.442140000000004, 1, 3, 3]</td>
+      <td>379.37</td>
+      <td>4.44</td>
+      <td>1</td>
+      <td>3</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Br.CN(C)CCCC1(OCc2cc(ccc12)C#N)c3ccc(F)cc3</td>
+      <td>674732</td>
+      <td>[405.31100000000004, 4.390880000000004, 0, 3, 5]</td>
+      <td>405.31</td>
+      <td>4.39</td>
+      <td>0</td>
+      <td>3</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Br.CN1CCC[C@@H]1Cc2c[nH]c3ccc(CCS(=O)(=O)c4ccc...</td>
+      <td>674954</td>
+      <td>[463.4410000000002, 4.398900000000004, 1, 3, 6]</td>
+      <td>463.44</td>
+      <td>4.40</td>
+      <td>1</td>
+      <td>3</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Br.COc1ccc2CN(C)CC[C@@]34C=C[C@H](O)C[C@@H]3Oc...</td>
+      <td>443255</td>
+      <td>[368.2710000000001, 2.4282000000000004, 1, 4, 1]</td>
+      <td>368.27</td>
+      <td>2.43</td>
+      <td>1</td>
+      <td>4</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>CC(C)CC(N(C)C)C1(CCC1)c2ccc(Cl)cc2</td>
+      <td>358192</td>
+      <td>[279.85499999999996, 4.738000000000005, 0, 1, 5]</td>
+      <td>279.85</td>
+      <td>4.74</td>
+      <td>0</td>
+      <td>1</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>96</th>
+      <td>CC(C)CC1(CC=C)C(=O)NC(=O)NC1=O</td>
+      <td>2524</td>
+      <td>[224.26, 0.9609999999999999, 2, 3, 4]</td>
+      <td>224.26</td>
+      <td>0.96</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>97</th>
+      <td>CC(C)Cc1ccc(cc1)C(C)C(=O)O</td>
+      <td>11674</td>
+      <td>[206.28499999999997, 3.073200000000001, 1, 1, 4]</td>
+      <td>206.28</td>
+      <td>3.07</td>
+      <td>1</td>
+      <td>1</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>98</th>
+      <td>CC(C)CCC[C@@H](C)[C@H]1CC[C@H]2\C(=C\C=C/3\C[C...</td>
+      <td>125294</td>
+      <td>[384.6480000000003, 7.619000000000009, 1, 1, 6]</td>
+      <td>384.65</td>
+      <td>7.62</td>
+      <td>1</td>
+      <td>1</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>99</th>
+      <td>CC(C)CN(C[C@@H](O)[C@H](Cc1ccccc1)NC(=O)O[C@H]...</td>
+      <td>17347</td>
+      <td>[505.63700000000034, 2.4028, 3, 7, 11]</td>
+      <td>505.64</td>
+      <td>2.40</td>
+      <td>3</td>
+      <td>7</td>
+      <td>11</td>
+    </tr>
+  </tbody>
+</table>
+<p>100 rows × 8 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>At this point, we no longer need the R5 column, so we can get rid of it.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">"R5"</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Finally, we can write the results to csv file.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"props.csv"</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Parallel-Version">
+<a class="anchor" href="#Parallel-Version" aria-hidden="true"><span class="octicon octicon-link"></span></a>Parallel Version<a class="anchor-link" href="#Parallel-Version"> </a>
+</h3>
+<p>In order to parallelize this calculation with Dask, we need a couple of addtional imports</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">dask.dataframe</span> <span class="k">as</span> <span class="nn">dd</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We also need to convert the Pandas dataframe to a Dask dataframe. In the constructor for the Dask dataframe, we'll specify an argument "npartitions", that specifies the number of chunks to divided the dataframe into for the calculation.  This seems to be most efficeint when we set "npartitions" to the number of processors.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_cores</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">ddf</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">npartitions</span><span class="o">=</span><span class="n">num_cores</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Parallelization with Dask requires a function that accepts a dataframe as input. We can define a function that uses the "apply" from the serial version above.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">df_r5</span><span class="p">(</span><span class="n">df_in</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">df_in</span><span class="o">.</span><span class="n">SMILES</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">calc_r5</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we can parallelize our workflow with a single line of code.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s2">"R5"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ddf</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">df_r5</span><span class="p">,</span><span class="n">meta</span><span class="o">=</span><span class="s1">'float'</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s1">'processes'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can use the same method we described about to split the "R5" column into mulitple columns.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[[</span><span class="s2">"MW"</span><span class="p">,</span><span class="s2">"LogP"</span><span class="p">,</span><span class="s2">"HBD"</span><span class="p">,</span><span class="s2">"HBA"</span><span class="p">,</span><span class="s2">"Rot"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">R5</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">"R5"</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Benchmarking">
+<a class="anchor" href="#Benchmarking" aria-hidden="true"><span class="octicon octicon-link"></span></a>Benchmarking<a class="anchor-link" href="#Benchmarking"> </a>
+</h3>
+<p>Let's take a look at how much of a speedup we can get by using Dask.  To do this, we'll take a look at how long it takes to calculate the five properties above for 1 million molecules from ZINC database.  The input file is large so I didn't include it in this post.  Here's the code I used to perform the benchmark.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"zinc_1M.smi"</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s2">" "</span><span class="p">,</span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"SMILES"</span><span class="p">,</span><span class="s2">"Name"</span><span class="p">])</span>
+<span class="n">runtime_res</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">num_cores</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">):</span>
+    <span class="n">ddf</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">npartitions</span><span class="o">=</span><span class="n">num_cores</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">"R5"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ddf</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">df_r5</span><span class="p">,</span><span class="n">meta</span><span class="o">=</span><span class="s1">'float'</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s1">'processes'</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span>
+    <span class="n">df</span><span class="p">[[</span><span class="s2">"MW"</span><span class="p">,</span><span class="s2">"LogP"</span><span class="p">,</span><span class="s2">"HBD"</span><span class="p">,</span><span class="s2">"HBA"</span><span class="p">,</span><span class="s2">"Rot"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">R5</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">"R5"</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"props.csv"</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%0.2f</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> molecules processed in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2"> sec on </span><span class="si">{</span><span class="n">num_cores</span><span class="si">}</span><span class="s2"> cores"</span><span class="p">)</span>
+    <span class="n">runtime_res</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">elapsed</span><span class="p">,</span><span class="n">num_cores</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>1000000 molecules processed in 714.70 sec on 1 cores
+1000000 molecules processed in 378.56 sec on 2 cores
+1000000 molecules processed in 272.38 sec on 3 cores
+1000000 molecules processed in 211.11 sec on 4 cores
+1000000 molecules processed in 177.00 sec on 5 cores
+1000000 molecules processed in 158.07 sec on 6 cores
+1000000 molecules processed in 146.98 sec on 7 cores
+1000000 molecules processed in 142.83 sec on 8 cores
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Make a datafrme so that we can view the results.  We'll add a column with the runtime ratio for n cores to 1 core.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">runtime_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">runtime_res</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"Runtime"</span><span class="p">,</span><span class="s2">"Cores"</span><span class="p">])</span>
+<span class="n">one_core_time</span> <span class="o">=</span> <span class="n">runtime_df</span><span class="o">.</span><span class="n">Runtime</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">runtime_df</span><span class="p">[</span><span class="s1">'Ratio'</span><span class="p">]</span> <span class="o">=</span> <span class="n">one_core_time</span><span class="o">/</span><span class="n">runtime_df</span><span class="o">.</span><span class="n">Runtime</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>View the results. 5x speed-up with 8 cores, not too bad for one line of code.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">runtime_df</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Runtime</th>
+      <th>Cores</th>
+      <th>Ratio</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>714.70</td>
+      <td>1</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>378.56</td>
+      <td>2</td>
+      <td>1.89</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>272.38</td>
+      <td>3</td>
+      <td>2.62</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>211.11</td>
+      <td>4</td>
+      <td>3.39</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>177.00</td>
+      <td>5</td>
+      <td>4.04</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>158.07</td>
+      <td>6</td>
+      <td>4.52</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>146.98</td>
+      <td>7</td>
+      <td>4.86</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>142.83</td>
+      <td>8</td>
+      <td>5.00</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Plot the results.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">rc</span><span class="o">=</span><span class="p">{</span><span class="s1">'figure.figsize'</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)})</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">'whitegrid'</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">'talk'</span><span class="p">)</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">"Cores"</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="s2">"Runtime"</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">runtime_df</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s2">"Runtime (sec)"</span><span class="p">);</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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668lSenp6frtt9/KvDAAAABcn2sKep988om6dOmiRx55RFOmTNH333+v+Ph4de7cWUuXLi2vGgEAAFAKJQ56O3fu1JQpU9SwYUNNnz5dTqdTklS3bl397W9/0xtvvKHNmzeXW6EAAAC4NiUOem+99ZaaNm2qd955R/fee29ee6NGjbRu3TpFRERo1apV5VIkAAAArt01vRnj73//uzw983/Ey8tLffr0UVJSUpkWBwAAgNIrcdDz9vZWdnZ2of0XLlyQt7d3mRQFAACA61fioNemTRu9++67ysjIyNf3yy+/aN26dWrZsmWZFgcAAIDSK/Fz9CZPnqwBAwbkvRnDw8NDn332mf7v//5P77//vjIzMzVhwoTyrBUAAADXoMQreo0aNdLatWt14403avXq1XI6nVqzZo1WrVql+vXra+XKlbr11lvLs1YAAABcg2t6M0bjxo21evVqXbhwQSdOnFBOTo5CQkJUu3bt8qoPAAAApXRNQS9XzZo1VbNmTWVlZWnXrl2yWCxq166dvLxK9XUAAAAoByVOZpmZmZo5c6Z++uknLV++XJmZmRowYICOHj0q6eql3VWrVikwMLDcigUAAEDJlXiP3ptvvqkNGzbopptukiRt2rRJR44c0eDBg/XKK6/o119/1fz588utUAAAAFybEq/offLJJ3rooYc0c+ZMSVJcXJz8/f01bdo0eXl5KSUlRRs3biy3QgEAAHBtSryid/r0abVo0UKSlJ6erm+++cZlX95NN92kixcvlkuRAAAAuHYlDnp/+ctfdPbsWUnSF198oczMTHXp0iWvPzExUTfeeGOZFwgAAIDSKfGl27Zt22rVqlXy8fHR2rVr5evrqx49eujixYt67733tGHDBj388MPlWSsAAACuQYmD3tNPP60zZ85o9uzZql69umbOnKkbbrhB8fHxmj17tlq3bq1x48aVZ60AAAC4BiUOejfccINWrFihc+fOyWazyWq1SpJuvfVWrV+/Xs2bNy+3IgEAAHDtCt2jd/LkyQLbAwIC8kKeJFWvXr3QkJeSknKd5QEAAKC0Cg16Dz74oGbOnKkzZ85c85empKToH//4hx566KHrKg4AAAClV2jQ27x5s3755Rd1795dQ4cO1dq1awtdoXM6nUpMTNTatWs1aNAg9ezZU6mpqdq8eXO5FQ4AAICiFbpHLygoSLGxsfrmm2+0cuVKvfLKK5o5c6Z8fX0VEhIim80mp9Op8+fP65dfftGVK1fk4eGhbt26ae3atbr99tsr8jwAAADwJ8XejNG6dWu1bt1ap0+f1ueff66EhASlpKTowoUL8vT01E033aSWLVvqjjvuUMeOHRUQEFARdQMAAKAYJb7rNjg4WP3791f//v3Lsx4AAACUkRK/GQMAAACVC0EPAADApAh6AAAAJkXQAwAAMCmCHgAAgEmVKuidOXNG+/fv16VLl5SZmamcnJyyrgsAAADX6ZqCXnx8vB544AF16dJFDz/8sA4ePKj//ve/6tKli7Zs2VJeNQIAAKAUShz0vv32W0VFReny5ct67LHH8tpr1KghLy8vTZ06VTt27CiXIgEAAHDtShz05s+fr7p162rz5s0aOXKknE6nJKlZs2b64IMP1KhRIy1evLjcCgUAAMC1KXHQ27t3rx544AFVq1ZNHh4eLn02m039+/fX999/X+YFAgAAoHSuaY+e1WottC8jI4ObMgAAANxIiYNe8+bN9dFHHxXYl5aWpo0bN6pZs2ZlVhgAAACuT4mD3oQJE3T48GE9+uij2rRpkzw8PPTtt9/qnXfe0b333quffvpJo0ePLs9aAQAAcA28SjowIiJCixcv1nPPPafZs2dLkubOnStJql27tubOnas77rijfKoEAADANStx0JOkDh066NNPP9WhQ4eUkpKinJwchYSEqGnTpvLyuqavAgAAQDm75nTm4eGhpk2bqmnTpuVRDwAAAMpIiYNeZmam/ud//ke7du3Sr7/+WuAdth4eHtq2bVuZFggAAIDSKXHQe/nll7V+/XoFBwcrJCREnp6lek0uAAAAKkiJg96nn36qPn366PXXXy/PegAAAFBGSrws53A41Lp16/KsBQAAAGWoxEGvV69e+vTTT8uzFgAAAJShEl+6nT59ukaOHKmHH35YPXr0UGBgYL533krSfffdV5b1AQAAoJRKHPTi4+N1+PBhpaena9++fQWO8fDwIOgBAAC4iRIHvZiYGFWvXl1PPvmkQkNDZbFYyrMuAAAAXKcSB70TJ07oySef1COPPFKe9QAAAKCMlPhmjNDQUF26dKk8awEAAEAZKnHQmzBhglatWqUdO3YU+FYMAAAAuJcSX7rduHGjrFarRo8eLR8fH9WsWTPfPj1egQYAAOA+Shz0Ll++rIYNG6ph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6dIlo8twO+62j5GgBwAAUEbcbR8jl24BAADKiLvtYyToAQAAlCF32sdI0AMAACgH6enpRpfAHj0AAACzIugBAACYFEEPAADApAh6AAAAJkXQAwAAMCmCHgAAgEkR9AAAAEyKoAcAAGBSBD0AAACTIugBAACYFEEPAADApAh6AAAAJkXQAwAAMCmCHgAAgEkR9AAAAEyKoAcAAGBSHk6n02l0Ee4kPj5ekmSxWMrtGA6Ho9yPUdkxR0VjforHHBWN+Skec1Q05qd4FTFHucdo2bJlgf1e5XZkFIrfFMVjjorG/BSPOSoa81M85qhozE/x3GGOWNEDAAAwKfboAQAAmBRBDwAAwKQIegAAACZF0AMAADApgh4AAIBJEfQAAABMiqAHAABgUgQ9AAAAkyLoAQAAmBRBDwAAwKQIegAAACZF0DPQkSNHFB4ertOnTxtditvIycnRP//5T/Xt21cRERHq0aOHZs2aJbvdbnRpbsPpdGrlypXq1auXbrvtNt1zzz368MMPjS7LbY0bN06RkZFGl+E2srOzddttt6lx48YuvyIiIowuza188803GjhwoJo3b66OHTvqpZde0uXLl40uy3C7d+/O99/OH3+9//77RpfoNv75z3+qd+/eatGihfr27asPPvjAkDq8DDkq9OOPP2rUqFHKzs42uhS3snTpUs2bN0/Dhw9Xu3btlJSUpNjYWP3www9atmyZ0eW5hcWLFys2Nlbjx49XixYt9Pnnn2vq1KmyWCy6++67jS7PrWzevFmffvqp6tevb3QpbiMpKUkZGRmaPXu2GjZsmNfu6cm/+3Pt27dPUVFR6tatm95++20lJydrzpw5OnfunObOnWt0eYYKDw/X+vXrXdqcTqeeeeYZpaWlqXPnzgZV5l7Wr1+v559/XsOGDdOdd96pHTt26Mknn5S3t7d69+5dobUQ9CpYdna21q9frzfeeEPe3t5Gl+NWnE6nli5dqgEDBmjKlCmSpPbt26tWrVqaNGmSjhw5oltvvdXgKo2VlZWl5cuXa+DAgRozZowkqV27djp48KDWrFlD0PuDM2fO6OWXX1ZwcLDRpbiVo0ePytPTU7169ZKvr6/R5bil119/XS1atND8+fPl4eGh9u3bKycnRytWrFB6enqVnjebzaYWLVq4tK1atUpJSUn617/+pYCAAGMKczPvv/++2rZtq+nTp0u6+nfZwYMHtW7dugoPevwTroLFx8fr9ddf17BhwzR16lSjy3Erly9f1j333KM+ffq4tIeFhUmSTpw4YURZbsVisWj16tUaOXKkS7u3t7cyMjIMqso9Pfvss+rQoYPatWtndClu5ciRI6pfv36VDitFOXfunPbs2aOBAwfKw8Mjr33QoEHatm0b8/YnZ8+e1fz58/Muc+OqjIwM+fn5ubTVrFlTFy5cqPBaCHoVrFGjRtq2bZvGjRsni8VidDluxWaz6dlnn1XLli1d2rdt2yZJ+utf/2pEWW7F09NTjRs3VlBQkJxOp86ePaslS5boyy+/1IABA4wuz21s3LhRhw4d0j/+8Q+jS3E7iYmJslqtGj58uCIiItS6dWtFR0ezD/Z33333nZxOp2rUqKGJEyeqRYsWatmypZ577jlduXLF6PLcTmxsrDw9PTVx4kSjS3ErQ4YM0RdffKFPPvlEdrtd//nPf/R///d/uvfeeyu8Fi7dVrC//OUvRpdQqezfv19LlixRjx491KhRI6PLcStbt27VhAkTJEldunTRPffcY3BF7uHkyZOaNWuWZs2axWWkAhw9elR2u139+vXT6NGjdfDgQS1YsEBJSUl65513XFaxqqJz585Jkp566ilFRkbq7bffVmJioubNm6eMjAy9+uqrBlfoPs6dO6dNmzZp2LBhuuGGG4wux638/e9/19dff+0SgO+//36NGDGiwmsh6MFtxcfHa/To0apbt65mzpxpdDlup0mTJlqzZo0SExM1f/58jRw5Uu+8847RZRnK6XTq6aefVufOndWrVy+jy3FLc+fOVY0aNdS4cWNJUuvWrRUYGKgnn3xSX375pTp06GBwhcbKysqSJN1+++167rnnJF3dB+t0OjV79myNHTtW9erVM7JEt7Fhwwbl5ORoyJAhRpfidsaMGaO9e/dqxowZatKkifbv36+FCxfmXbmqSAQ9uKUtW7boqaeeUsOGDbV06VLVqlXL6JLcTr169VSvXj21bt1aNptN06dP1969e6v0YzLWrl2rxMREffjhh3l3tDudTklXb4SyWCxVfsWqTZs2+dq6dOki6epqX1UPern7qjp16uTS3rFjR7366qtKTEwk6P0uLi5Od955Jyvnf5KQkKCdO3dq1qxZeuCBByRd/X13ww03KDo6Wv369cv7h1ZFYI8e3M6KFSs0efJk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%0A">
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Acknowledgments">
+<a class="anchor" href="#Acknowledgments" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledgments<a class="anchor-link" href="#Acknowledgments"> </a>
+</h3>
+<p>I'd like to thank Yutong Zhao, Greg Landrum, Peter St. John, and Maciek Wójcikowski for valuable advice.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="PatWalters/practicalcheminformatics"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/practicalcheminformatics/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/practicalcheminformatics/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/practicalcheminformatics/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/fastai" title="fastai"><svg class="svg-icon grey"><use xlink:href="/practicalcheminformatics/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/fastdotai" title="fastdotai"><svg class="svg-icon grey"><use xlink:href="/practicalcheminformatics/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
