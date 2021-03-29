@@ -4,7 +4,8 @@ title: About Me
 permalink: /about/
 ---
 
-<img align="left" src="{{site.baseurl}}/images/wpw_cartoon_small.jpg">  
+<img align="left" src="{{site.baseurl}}/images/wpw_cartoon_small.jpg">
+<br/><br/>
 
 I do Cheminformatics, sometimes I write about it.
 
