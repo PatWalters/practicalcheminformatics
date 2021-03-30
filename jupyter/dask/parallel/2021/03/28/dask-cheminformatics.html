@@ -10,13 +10,14 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Acclerate you workflows with a couple of lines of code." />
 <meta property="og:description" content="Acclerate you workflows with a couple of lines of code." />
-<link rel="canonical" href="https://patwalters.github.io/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html" />
-<meta property="og:url" content="https://patwalters.github.io/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html" />
+<link rel="canonical" href="https://patwalters.github.io/practicalcheminformatics/jupyter/dask/parallel/2021/03/28/dask-cheminformatics.html" />
+<meta property="og:url" content="https://patwalters.github.io/practicalcheminformatics/jupyter/dask/parallel/2021/03/28/dask-cheminformatics.html" />
 <meta property="og:site_name" content="Practical Cheminformatics" />
+<meta property="og:image" content="https://patwalters.github.io/practicalcheminformatics/images/blog/dask_blog.png" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2021-03-28T00:00:00-05:00" />
 <script type="application/ld+json">
-{"url":"https://patwalters.github.io/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html","@type":"BlogPosting","headline":"Fast Parallel Cheminformatics Workflows With Dask","dateModified":"2021-03-28T00:00:00-05:00","datePublished":"2021-03-28T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://patwalters.github.io/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html"},"description":"Acclerate you workflows with a couple of lines of code.","@context":"https://schema.org"}</script>
+{"url":"https://patwalters.github.io/practicalcheminformatics/jupyter/dask/parallel/2021/03/28/dask-cheminformatics.html","@type":"BlogPosting","headline":"Fast Parallel Cheminformatics Workflows With Dask","dateModified":"2021-03-28T00:00:00-05:00","datePublished":"2021-03-28T00:00:00-05:00","image":"https://patwalters.github.io/practicalcheminformatics/images/blog/dask_blog.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://patwalters.github.io/practicalcheminformatics/jupyter/dask/parallel/2021/03/28/dask-cheminformatics.html"},"description":"Acclerate you workflows with a couple of lines of code.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/practicalcheminformatics/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://patwalters.github.io/practicalcheminformatics/feed.xml" title="Practical Cheminformatics" /><link rel="shortcut icon" type="image/x-icon" href="/practicalcheminformatics/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
@@ -85,6 +86,12 @@ window.onload = wrap_img;
       <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
       
         <a class="category-tags-link" href="/practicalcheminformatics/categories/#jupyter">jupyter</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/practicalcheminformatics/categories/#dask">dask</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/practicalcheminformatics/categories/#parallel">parallel</a>
         
       
       </p>
@@ -100,17 +107,8 @@ window.onload = wrap_img;
     </a>
 </div>
 
-          <div class="px-2">
-    <a href="https://mybinder.org/v2/gh/PatWalters/practicalcheminformatics/master?filepath=_notebooks%2F2021-03-28-dask-cheminformatics.ipynb" target="_blank">
-        <img class="notebook-badge-image" src="/practicalcheminformatics/assets/badges/binder.svg" alt="Open In Binder"/>
-    </a>
-</div>
-
-          <div class="px-2">
-    <a href="https://colab.research.google.com/github/PatWalters/practicalcheminformatics/blob/master/_notebooks/2021-03-28-dask-cheminformatics.ipynb" target="_blank">
-        <img class="notebook-badge-image" src="/practicalcheminformatics/assets/badges/colab.svg" alt="Open In Colab"/>
-    </a>
-</div>
+          
+          
         </div>
       </header>
 
@@ -119,6 +117,7 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h3"><a href="#Single-Processor-Version">Single Processor Version </a></li>
 <li class="toc-entry toc-h3"><a href="#Parallel-Version">Parallel Version </a></li>
 <li class="toc-entry toc-h3"><a href="#Benchmarking">Benchmarking </a></li>
+<li class="toc-entry toc-h3"><a href="#Caveats">Caveats </a></li>
 <li class="toc-entry toc-h3"><a href="#Acknowledgments">Acknowledgments </a></li>
 </ul><!--
 #################################################
@@ -170,7 +169,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>First, let's ensure that that Pandas dataframes are dispalyed with an appropriate number of decimal places.</p>
+<p>Let's ensure that that Pandas dataframes are displayed with an appropriate number of decimal places.</p>
 
 </div>
 </div>
@@ -195,7 +194,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Next, we'll define a function to calculate the properties</p>
+<p>Define a function to calculate the properties</p>
 
 </div>
 </div>
@@ -227,7 +226,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we'll read a SMILES file into a Pandas dataframe</p>
+<p>Read a SMILES file into a Pandas dataframe</p>
 
 </div>
 </div>
@@ -239,7 +238,7 @@ window.onload = wrap_img;
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">infile_name</span> <span class="o">=</span> <span class="s2">"test.smi"</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">infile_name</span> <span class="o">=</span> <span class="s2">"https://github.com/PatWalters/datafiles/blob/main/test.smi?raw=true"</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">infile_name</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s2">" "</span><span class="p">,</span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"SMILES"</span><span class="p">,</span><span class="s2">"Name"</span><span class="p">])</span>
 </pre></div>
 
@@ -253,7 +252,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we can calculate the properties for the SMILES in the dataframe.</p>
+<p>Calculate the properties for the SMILES in the dataframe.</p>
 
 </div>
 </div>
@@ -278,7 +277,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we have all of the properties as a list in one column.  This isn't what we want, however, we can use this trick to create new columns from the list.</p>
+<p>Now we have all of the properties as a list in one column.  This isn't what we want. However, we can use this trick to create new columns from the list.</p>
 
 </div>
 </div>
@@ -513,7 +512,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Finally, we can write the results to csv file.</p>
+<p>Finally, we can write the results to a csv file.</p>
 
 </div>
 </div>
@@ -541,7 +540,7 @@ window.onload = wrap_img;
 <h3 id="Parallel-Version">
 <a class="anchor" href="#Parallel-Version" aria-hidden="true"><span class="octicon octicon-link"></span></a>Parallel Version<a class="anchor-link" href="#Parallel-Version"> </a>
 </h3>
-<p>In order to parallelize this calculation with Dask, we need a couple of addtional imports</p>
+<p>In order to parallelize this calculation with Dask, we need an additional import.</p>
 
 </div>
 </div>
@@ -566,7 +565,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We also need to convert the Pandas dataframe to a Dask dataframe. In the constructor for the Dask dataframe, we'll specify an argument "npartitions", that specifies the number of chunks to divided the dataframe into for the calculation.  This seems to be most efficeint when we set "npartitions" to the number of processors.</p>
+<p>We also need to convert the Pandas dataframe to a Dask dataframe. In the constructor for the Dask dataframe, we specify an argument "npartitions", that defines the number of chunks to divide the dataframe into for the calculation.  This seems to be most efficeint when we set "npartitions" to the number of processor cores.</p>
 
 </div>
 </div>
@@ -643,7 +642,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We can use the same method we described about to split the "R5" column into mulitple columns.</p>
+<p>We can use the same method we described above to split the "R5" column into multiple columns.</p>
 
 </div>
 </div>
@@ -672,7 +671,7 @@ window.onload = wrap_img;
 <h3 id="Benchmarking">
 <a class="anchor" href="#Benchmarking" aria-hidden="true"><span class="octicon octicon-link"></span></a>Benchmarking<a class="anchor-link" href="#Benchmarking"> </a>
 </h3>
-<p>Let's take a look at how much of a speedup we can get by using Dask.  To do this, we'll take a look at how long it takes to calculate the five properties above for 1 million molecules from ZINC database.  The input file is large so I didn't include it in this post.  Here's the code I used to perform the benchmark.</p>
+<p>Let's take a look at how much of a speedup we can get by using Dask.  To do this, we'll take a look at how long it takes to calculate the five properties above for 1 million molecules from the ZINC database.  The input file is large so I didn't include it in this post.  Here's the code I used to perform the benchmark.</p>
 
 </div>
 </div>
@@ -731,7 +730,7 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Make a datafrme so that we can view the results.  We'll add a column with the runtime ratio for n cores to 1 core.</p>
+<p>Make a dataframe so that we can view the results.  We'll add a column with the runtime ratio for n cores to 1 core.</p>
 
 </div>
 </div>
@@ -920,6 +919,17 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Caveats">
+<a class="anchor" href="#Caveats" aria-hidden="true"><span class="octicon octicon-link"></span></a>Caveats<a class="anchor-link" href="#Caveats"> </a>
+</h3>
+<p>The method described here is only going to work for datasets that will fit into memory.  You can use this method to process millions of molecules, but it won't work for billions.  Dask has other methods for dealing with data that won't fit into memory.  We'll save that discussion for another day.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Acknowledgments">
 <a class="anchor" href="#Acknowledgments" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledgments<a class="anchor-link" href="#Acknowledgments"> </a>
 </h3>
@@ -940,7 +950,7 @@ window.onload = wrap_img;
         theme="github-light"
         crossorigin="anonymous"
         async>
-</script><a class="u-url" href="/practicalcheminformatics/jupyter/2021/03/28/dask-cheminformatics.html" hidden></a>
+</script><a class="u-url" href="/practicalcheminformatics/jupyter/dask/parallel/2021/03/28/dask-cheminformatics.html" hidden></a>
 </article>
       </div>
     </main><footer class="site-footer h-card">
@@ -959,11 +969,11 @@ window.onload = wrap_img;
         </p>
       </div>
       <div class="footer-col">
-        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+        <p>Hopefully useful tips, with code</p>
       </div>
     </div>
 
-    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/fastai" title="fastai"><svg class="svg-icon grey"><use xlink:href="/practicalcheminformatics/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/fastdotai" title="fastdotai"><svg class="svg-icon grey"><use xlink:href="/practicalcheminformatics/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/patwalters" title="patwalters"><svg class="svg-icon grey"><use xlink:href="/practicalcheminformatics/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://www.linkedin.com/in/wpwalters" title="wpwalters"><svg class="svg-icon grey"><use xlink:href="/practicalcheminformatics/assets/minima-social-icons.svg#linkedin"></use></svg></a></li><li><a rel="me" href="https://twitter.com/wpwalters" title="wpwalters"><svg class="svg-icon grey"><use xlink:href="/practicalcheminformatics/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
 </div>
 
   </div>
