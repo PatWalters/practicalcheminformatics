@@ -317,7 +317,7 @@ R-group, and level two replacements, which are "replacements for replacements". 
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Define a function to get replacements for a substituent.  Note that we use the smi2cansmi function we created above.</p>
+<p>Define a function to get replacements for a substituent.  Note that we use the smi2cansmi function we created above. This function now includes a change suggested in the comments by James Wallace (thanks!).</p>
 
 </div>
 </div>
@@ -331,7 +331,7 @@ R-group, and level two replacements, which are "replacements for replacements". 
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_replacements</span><span class="p">(</span><span class="n">smi</span><span class="p">,</span> <span class="n">replacement_dict</span><span class="p">):</span>
     <span class="n">cansmi</span> <span class="o">=</span> <span class="n">smi2cansmi</span><span class="p">(</span><span class="n">smi</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">replacement_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cansmi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">replacement_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cansmi</span><span class="p">,</span> <span class="p">[[</span><span class="n">cansmi</span><span class="p">],</span> <span class="p">[</span><span class="n">cansmi</span><span class="p">]])</span>
 </pre></div>
 
     </div>
